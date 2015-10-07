@@ -1,0 +1,45 @@
+eval home=~/
+export SSH_CONFIG_GENERATE_FILE="$home.ssh/config-generate"
+export SSH_SHARED_DIR="$home.ssh/shared"
+bash_directory=$( dirname "${BASH_SOURCE[0]}" )
+export SSH_SHARED_CONFIG_FILE=$bash_directory/".ssh_config_shared_files"
+
+if [ -f $SSH_SHARED_CONFIG_FILE ]; then
+	files=$(cat -s $SSH_SHARED_CONFIG_FILE | | sed -e /^$/d | sed 's/^ *//;s/ *$//' | sed '/^#/ d' | tr '\n' ';' |sed s'/;$//')
+	export SSH_SHARED_FILES="$files"
+fi
+
+getsshsharedconfig() {
+        if [ ! -d "$SSH_SHARED_DIR" ]; then
+                mkdir -p "$SSH_SHARED_DIR"
+        fi
+	find $SSH_SHARED_DIR -mmin +5 -type f -delete 2> /dev/null
+        while IFS=';' read -ra ARR; do
+        	for i in "${ARR[@]}"; do
+                	configfile=$(echo $i | md5sum | cut -d\  -f1)
+			if [ ! -f "$configfile.config" ]; then
+                		configcontent=$(wget -q -O - "$@" $i)
+                		ret=$?
+                		if [ $ret == 0 ]; then
+                        		echo "$configcontent" > "$SSH_SHARED_DIR/$configfile.config"
+                		fi
+			fi
+        	done
+	done <<< "$SSH_SHARED_FILES"
+}
+
+compilesshconfig() {
+        echo -n > $SSH_CONFIG_GENERATE_FILE
+        cat $SSH_SHARED_DIR/*.config 2> /dev/null >> $SSH_CONFIG_GENERATE_FILE
+        cat ~/.ssh/config 2> /dev/null >> $SSH_CONFIG_GENERATE_FILE
+}
+
+alias ssh='getsshsharedconfig;compilesshconfig && ssh -F $SSH_CONFIG_GENERATE_FILE'
+
+_ssh()
+{
+    $(getsshsharedconfig;compilesshconfig)
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    COMPREPLY=( $(compgen -W "$(cat $SSH_CONFIG_GENERATE_FILE | grep "Host " | grep -v "*" | awk '{print $2}' | tr '\n' ' ')" -- $cur) )
+}
+complete -F _ssh ssh
