@@ -5,7 +5,7 @@ bash_directory=$( dirname "${BASH_SOURCE[0]}" )
 export SSH_SHARED_CONFIG_FILE=$bash_directory/".ssh_config_shared_files"
 
 if [ -f $SSH_SHARED_CONFIG_FILE ]; then
-	files=$(cat -s $SSH_SHARED_CONFIG_FILE | | sed -e /^$/d | sed 's/^ *//;s/ *$//' | sed '/^#/ d' | tr '\n' ';' |sed s'/;$//')
+	files=$(cat -s $SSH_SHARED_CONFIG_FILE | sed -e /^$/d | sed 's/^ *//;s/ *$//' | sed '/^#/ d' | tr '\n' ';' |sed s'/;$//')
 	export SSH_SHARED_FILES="$files"
 fi
 
@@ -14,9 +14,11 @@ getsshsharedconfig() {
                 mkdir -p "$SSH_SHARED_DIR"
         fi
 	find $SSH_SHARED_DIR -mmin +5 -type f -delete 2> /dev/null
+	fileprefix=1
         while IFS=';' read -ra ARR; do
         	for i in "${ARR[@]}"; do
                 	configfile=$(echo $i | md5sum | cut -d\  -f1)
+			configfile=$(printf "%.3d-%s" $fileprefix $configfile)
 			if [ ! -f "$configfile.config" ]; then
                 		configcontent=$(wget -q -O - "$@" $i)
                 		ret=$?
@@ -24,6 +26,7 @@ getsshsharedconfig() {
                         		echo "$configcontent" > "$SSH_SHARED_DIR/$configfile.config"
                 		fi
 			fi
+			fileprefix=`expr $fileprefix + 1`
         	done
 	done <<< "$SSH_SHARED_FILES"
 }
