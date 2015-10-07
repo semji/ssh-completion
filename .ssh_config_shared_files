@@ -1,5 +1,4 @@
 ######################################
 #       base files list              #
 ######################################
-
-#http://basesshfile.com/file1
+http://gitlab.rvip.fr/nicolas.couet/shared-config/raw/master/.ssh/config
