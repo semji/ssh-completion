@@ -33,8 +33,15 @@ getsshsharedconfig() {
 
 compilesshconfig() {
         echo -n > $SSH_CONFIG_GENERATE_FILE
-        cat $SSH_SHARED_DIR/*.config 2> /dev/null >> $SSH_CONFIG_GENERATE_FILE
+	echo -e "###############################\n# file generate do not modify #\n###############################\n\n" > $SSH_CONFIG_GENERATE_FILE
+	echo -e "\n### config-before ###\n\n" >> $SSH_CONFIG_GENERATE_FILE 
+        cat ~/.ssh/config-before 2> /dev/null >> $SSH_CONFIG_GENERATE_FILE
+	echo -e "\n### config ###\n\n" >> $SSH_CONFIG_GENERATE_FILE
         cat ~/.ssh/config 2> /dev/null >> $SSH_CONFIG_GENERATE_FILE
+	echo -e "\n### configs files ###\n\n" >> $SSH_CONFIG_GENERATE_FILE
+        cat $SSH_SHARED_DIR/*.config 2> /dev/null >> $SSH_CONFIG_GENERATE_FILE
+	echo -e "\n### config-after ###\n\n" >> $SSH_CONFIG_GENERATE_FILE
+	cat ~/.ssh/config-after 2> /dev/null >> $SSH_CONFIG_GENERATE_FILE
 }
 
 alias ssh='getsshsharedconfig;compilesshconfig && ssh -F $SSH_CONFIG_GENERATE_FILE'

@@ -1,4 +1,6 @@
 ######################################
 #       base files list              #
 ######################################
-http://gitlab.rvip.fr/nicolas.couet/shared-config/raw/master/.ssh/config
+
+#http://my.host/myfirstfile
+#http://my.host/mysecondfile
