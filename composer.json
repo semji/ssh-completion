@@ -1,0 +1,14 @@
+{
+  "name": "reputation-vip/ssh-completion",
+  "description": "ssh completion",
+  "authors": [
+    {
+      "name": "Nicolas Couet",
+      "email": "tejerka@gmail.com"
+    }
+  ],
+  "require": {
+  },
+  "require-dev": {
+  }
+}
